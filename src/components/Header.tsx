@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu, X, LogOut, Package } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, LogOut, Package, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Logo } from './Logo';
 import { useCart } from '@/lib/cart';
 import { useAuth } from '@/lib/auth';
@@ -15,6 +15,9 @@ export function Header() {
   const [query, setQuery] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [cats, setCats] = useState<{ name: string; slug: string }[]>([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canLeft, setCanLeft] = useState(false);
+  const [canRight, setCanRight] = useState(false);
 
   useEffect(() => {
     supabase
@@ -24,6 +27,26 @@ export function Header() {
       .order('sort_order')
       .then(({ data }) => setCats(data || []));
   }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const update = () => {
+      setCanLeft(el.scrollLeft > 4);
+      setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+    };
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      el.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, [cats]);
+
+  const scrollBy = (dir: number) => {
+    scrollRef.current?.scrollBy({ left: dir * 240, behavior: 'smooth' });
+  };
 
   const onSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,19 +127,51 @@ export function Header() {
 
       {/* Category nav */}
       <nav className="hidden lg:block border-t border-slate-100 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 flex items-center gap-1 overflow-x-auto">
-          <Link to="/" className={`px-3 py-2.5 text-sm font-medium hover:text-amber-600 ${location.pathname === '/' ? 'text-amber-600' : 'text-slate-700'}`}>
-            Home
-          </Link>
-          {cats.map((c) => (
+        <div className="max-w-7xl mx-auto px-4 flex items-center gap-2">
+          <button
+            onClick={() => scrollBy(-1)}
+            disabled={!canLeft}
+            className="p-1.5 rounded-full hover:bg-slate-200 disabled:opacity-0 transition shrink-0"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <div ref={scrollRef} className="flex-1 flex items-center gap-2 py-2.5 overflow-x-auto scrollbar-none">
             <Link
-              key={c.slug}
-              to={`/category/${c.slug}`}
-              className="px-3 py-2.5 text-sm font-medium text-slate-700 hover:text-amber-600 whitespace-nowrap"
+              to="/"
+              className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition ${
+                location.pathname === '/'
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:border-amber-400 hover:text-amber-600'
+              }`}
             >
-              {c.name}
+              Home
             </Link>
-          ))}
+            {cats.map((c) => {
+              const active = location.pathname === `/category/${c.slug}`;
+              return (
+                <Link
+                  key={c.slug}
+                  to={`/category/${c.slug}`}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition ${
+                    active
+                      ? 'bg-slate-900 text-white'
+                      : 'bg-white text-slate-700 border border-slate-200 hover:border-amber-400 hover:text-amber-600'
+                  }`}
+                >
+                  {c.name}
+                </Link>
+              );
+            })}
+          </div>
+          <button
+            onClick={() => scrollBy(1)}
+            disabled={!canRight}
+            className="p-1.5 rounded-full hover:bg-slate-200 disabled:opacity-0 transition shrink-0"
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
       </nav>
 

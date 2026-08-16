@@ -1,7 +1,7 @@
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/lib/auth';
 import { CartProvider } from '@/lib/cart';
-import { AdminProvider } from '@/lib/admin';
+import { AdminProvider, useAdmin } from '@/lib/admin';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { WhatsAppButton } from '@/components/WhatsAppButton';
@@ -38,6 +38,19 @@ function StorefrontLayout() {
   );
 }
 
+function AdminRedirect() {
+  const { token } = useAdmin();
+  return <Navigate to={token ? '/admin/dashboard' : '/admin/login'} replace />;
+}
+
+function AdminRoutes() {
+  return (
+    <AdminProvider>
+      <Outlet />
+    </AdminProvider>
+  );
+}
+
 function App() {
   return (
     <AuthProvider>
@@ -57,29 +70,18 @@ function App() {
             </Route>
 
             {/* Admin */}
-            <Route
-              path="/admin"
-              element={
-                <AdminProvider>
-                  <AdminLoginPage />
-                </AdminProvider>
-              }
-            />
-            <Route
-              path="/admin/*"
-              element={
-                <AdminProvider>
-                  <AdminLayout />
-                </AdminProvider>
-              }
-            >
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="categories" element={<AdminCategories />} />
-              <Route path="brands" element={<AdminBrands />} />
-              <Route path="products" element={<AdminProducts />} />
-              <Route path="orders" element={<AdminOrders />} />
-              <Route path="cancellations" element={<AdminCancellations />} />
-              <Route path="replacements" element={<AdminReplacements />} />
+            <Route element={<AdminRoutes />}>
+              <Route path="/admin" element={<AdminRedirect />} />
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route path="/admin/*" element={<AdminLayout />}>
+                <Route path="dashboard" element={<AdminDashboard />} />
+                <Route path="categories" element={<AdminCategories />} />
+                <Route path="brands" element={<AdminBrands />} />
+                <Route path="products" element={<AdminProducts />} />
+                <Route path="orders" element={<AdminOrders />} />
+                <Route path="cancellations" element={<AdminCancellations />} />
+                <Route path="replacements" element={<AdminReplacements />} />
+              </Route>
             </Route>
           </Routes>
         </BrowserRouter>

@@ -1,16 +1,16 @@
 import { Navigate, NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FolderTree, Package, ClipboardList, XCircle, RefreshCw, LogOut, Zap, ExternalLink } from 'lucide-react';
+import { LayoutDashboard, FolderTree, Package, ClipboardList, Circle as XCircle, RefreshCw, LogOut, Zap, ExternalLink } from 'lucide-react';
 import { useAdmin } from '@/lib/admin';
 
 export function AdminLayout() {
   const { token, logout } = useAdmin();
   const navigate = useNavigate();
 
-  if (!token) return <Navigate to="/admin" replace />;
+  if (!token) return <Navigate to="/admin/login" replace />;
 
   const handleLogout = async () => {
     await logout();
-    navigate('/admin');
+    navigate('/admin/login');
   };
 
   const navItems = [

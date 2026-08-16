@@ -1,9 +1,32 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Truck, ShieldCheck, Headphones, Tag } from 'lucide-react';
+import { ChevronRight, Truck, ShieldCheck, Headphones, Tag, Zap } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import type { Category, Product } from '@/lib/types';
 import { ProductCard } from '@/components/ProductCard';
+
+const HERO_IMAGES = [
+  {
+    url: 'https://images.unsplash.com/photo-1591129841117-3adfd313e34f?auto=format&fit=crop&w=600&q=80',
+    label: 'Fans',
+    slug: 'fans',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=600&q=80',
+    label: 'Bulbs & Lights',
+    slug: 'bulbs-tubes',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80',
+    label: 'Switches & Wires',
+    slug: 'switches-plates-accessories',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=600&q=80',
+    label: 'Fancy Lighting',
+    slug: 'fancy-lights-zoomers',
+  },
+];
 
 export function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -54,10 +77,18 @@ export function HomePage() {
             </div>
           </div>
           <div className="hidden md:grid grid-cols-2 gap-4">
-            {featured.slice(0, 4).map((p) => (
-              <Link key={p.id} to={`/product/${p.slug}`} className="rounded-xl overflow-hidden bg-white/5 backdrop-blur border border-white/10 hover:scale-105 transition">
-                <img src={p.product_images?.[0]?.image_url} alt={p.name} className="w-full h-32 object-cover" />
-                <div className="p-2 text-xs">{p.name}</div>
+            {HERO_IMAGES.map((h) => (
+              <Link
+                key={h.slug}
+                to={`/category/${h.slug}`}
+                className="group rounded-xl overflow-hidden bg-white/5 backdrop-blur border border-white/10 hover:scale-105 transition relative"
+              >
+                <img src={h.url} alt={h.label} className="w-full h-32 object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent flex items-end p-2">
+                  <span className="text-xs font-medium text-white flex items-center gap-1">
+                    {h.label} <ChevronRight className="w-3 h-3" />
+                  </span>
+                </div>
               </Link>
             ))}
           </div>
@@ -86,24 +117,22 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-slate-900">Shop by Category</h2>
+      {/* Category strip */}
+      <section className="max-w-7xl mx-auto px-4 py-10">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-2xl font-bold text-slate-900">Browse by Category</h2>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="flex gap-3 overflow-x-auto scrollbar-none pb-1">
           {categories.map((c) => (
             <Link
               key={c.id}
               to={`/category/${c.slug}`}
-              className="group flex flex-col items-center p-4 rounded-xl border border-slate-200 hover:border-amber-400 hover:shadow-md transition bg-white"
+              className="group flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-slate-200 hover:border-amber-400 hover:shadow-md transition whitespace-nowrap shrink-0"
             >
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center mb-2 group-hover:from-amber-200 transition">
-                <span className="text-xl font-bold text-amber-600">
-                  {c.name.charAt(0)}
-                </span>
-              </div>
-              <span className="text-xs font-medium text-center text-slate-700 group-hover:text-amber-600">
+              <span className="flex items-center justify-center w-7 h-7 rounded-full bg-amber-100 text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition">
+                <Zap className="w-3.5 h-3.5" />
+              </span>
+              <span className="text-sm font-medium text-slate-700 group-hover:text-amber-600">
                 {c.name}
               </span>
             </Link>
